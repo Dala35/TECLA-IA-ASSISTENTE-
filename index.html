@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TECLA – Assistente Inclusiva</title>
+  <title>TECLA–Assistente Inclusiva</title>
   <style>
     body {
       font-family: sans-serif;
@@ -152,7 +152,18 @@
         falar("Desculpa, ainda não aprendi isso.");
       }
     }
+let desconhecidos = JSON.parse(localStorage.getItem("tecla_desconhecidos") || "{}");
 
+function registrarDesconhecido(chave) {
+  desconhecidos[chave] = (desconhecidos[chave] || 0) + 1;
+  if (desconhecidos[chave] >= 3) {
+    alert(`A frase "${chave}" foi dita várias vezes. Que tal ensiná-la à TECLA?`);
+  }
+  localStorage.setItem("tecla_desconhecidos", JSON.stringify(desconhecidos));
+}
+    if (!resultado) {
+  registrarDesconhecido(chave);
+    }
     function ouvir() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = "pt-PT";
@@ -200,28 +211,30 @@
         emojiCartoes.appendChild(cartao);
       }
     }
+<input type="file" id="importarArquivo" accept=".json" />
+<button onclick="importarDados()">📥 Importar Dados</button>
+    function importarDados() {
+  const arquivo = document.getElementById("importarArquivo").files[0];
+  if (!arquivo) {
+    alert("Selecione um arquivo .json válido.");
+    return;
+  }
 
-    function importar() {
-      const input = document.getElementById("arquivoImportar");
-      const file = input.files[0];
-      if (!file) return alert("Nenhum ficheiro selecionado.");
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const dados = JSON.parse(e.target.result);
-          const anteriores = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
-          const novos = { ...anteriores, ...dados };
-          localStorage.setItem("tecla_respostas", JSON.stringify(novos));
-          alert("Dados importados com sucesso!");
-          mostrarCartoes();
-        } catch {
-          alert("Ficheiro inválido.");
-        }
-      };
-      reader.readAsText(file);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const dadosImportados = JSON.parse(e.target.result);
+      const existentes = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
+      const novoBanco = { ...existentes, ...dadosImportados };
+      localStorage.setItem("tecla_respostas", JSON.stringify(novoBanco));
+      alert("Dados importados com sucesso!");
+      mostrarCartoes();
+    } catch {
+      alert("Erro ao importar. Verifique o arquivo.");
     }
-
+  };
+  reader.readAsText(arquivo);
+    }
     window.onload = mostrarCartoes;
   </script>
 </body>
