@@ -3,134 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TECLA IA ASSISTENTE</title>
+  <title>TECLA – IA Adaptativa para Autismo</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #1a1a1a;
-      color: #fff;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
+      font-family: sans-serif;
+      background: #f4f9ff;
+      text-align: center;
+      padding: 10px;
     }
     h1 {
-      text-align: center;
-      color: #00ffcc;
+      color: #004d7a;
     }
-    #chat {
-      background: #333;
-      padding: 15px;
-      border-radius: 10px;
-      min-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 10px;
+    .categoria {
+      margin: 20px 0;
     }
-    .user, .bot {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 10px;
+    .botoes {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
     }
-    .user {
-      background: #007bff;
-      text-align: right;
+    .botao {
+      font-size: 24px;
+      padding: 20px;
+      width: 120px;
+      height: 120px;
+      border: none;
+      border-radius: 16px;
+      background: #d0eaff;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px #aaa;
     }
-    .bot {
-      background: #444;
+    .botao:hover {
+      background: #c2e0ff;
     }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-    }
-    #input {
-      width: 70%;
-    }
-    #send, #mic {
-      width: 25%;
-      margin-left: 5px;
-    }
-    #mic {
-      background: #ff4081;
-      color: #fff;
+    #output {
+      margin-top: 30px;
+      font-size: 20px;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>🤖 TECLA – IA Inclusiva</h1>
-  <div id="chat"></div>
-  <input type="text" id="input" placeholder="Digite ou fale..." />
-  <button id="send">Enviar</button>
-  <button id="mic">🎤</button>
+  <h1>👋🏽 Olá, eu sou a TECLA</h1>
+  <p>Sou uma IA feita para te ajudar. Escolha o que você quer comunicar:</p>
+
+  <div class="categoria">
+    <h2>🧍 Necessidades</h2>
+    <div class="botoes">
+      <button class="botao" onclick="falar('Quero beber água')">🥤 Água</button>
+      <button class="botao" onclick="falar('Estou com fome')">🍽️ Comer</button>
+      <button class="botao" onclick="falar('Quero ir ao banheiro')">🚽 Banheiro</button>
+      <button class="botao" onclick="falar('Estou com sono')">😴 Dormir</button>
+    </div>
+  </div>
+
+  <div class="categoria">
+    <h2>😊 Emoções</h2>
+    <div class="botoes">
+      <button class="botao" onclick="falar('Estou feliz')">🙂 Feliz</button>
+      <button class="botao" onclick="falar('Estou triste')">😢 Triste</button>
+      <button class="botao" onclick="falar('Estou com raiva')">😡 Bravo</button>
+      <button class="botao" onclick="falar('Estou com medo')">😱 Medo</button>
+    </div>
+  </div>
+
+  <div class="categoria">
+    <h2>🏡 Lugares</h2>
+    <div class="botoes">
+      <button class="botao" onclick="falar('Quero ir para casa')">🏠 Casa</button>
+      <button class="botao" onclick="falar('Quero ir para escola')">🏫 Escola</button>
+      <button class="botao" onclick="falar('Quero ir para a cama')">🛏️ Cama</button>
+      <button class="botao" onclick="falar('Quero andar de carro')">🚗 Carro</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
 
   <script>
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('input');
-    const send = document.getElementById('send');
-    const mic = document.getElementById('mic');
-
-    let knowledge = JSON.parse(localStorage.getItem('tecla_memory')) || {
-      "quem é você": "Eu sou a TECLA, uma IA criada para ajudar pessoas com autismo.",
-      "olá": "Olá! Como posso te ajudar?",
-    };
-
-    function saveMemory() {
-      localStorage.setItem('tecla_memory', JSON.stringify(knowledge));
+    function falar(texto) {
+      const msg = new SpeechSynthesisUtterance(texto);
+      msg.lang = 'pt-PT';
+      speechSynthesis.speak(msg);
+      document.getElementById('output').textContent = texto;
+      salvarHistorico(texto);
     }
 
-    function appendMessage(sender, text) {
-      const msg = document.createElement('div');
-      msg.className = sender;
-      msg.textContent = text;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
+    function salvarHistorico(frase) {
+      let historico = JSON.parse(localStorage.getItem('teclaHistorico')) || [];
+      historico.push({ frase: frase, data: new Date().toISOString() });
+      localStorage.setItem('teclaHistorico', JSON.stringify(historico));
     }
-
-    function processMessage(message) {
-      const msgLower = message.toLowerCase().trim();
-
-      if (knowledge[msgLower]) {
-        appendMessage('bot', knowledge[msgLower]);
-      } else if (msgLower.includes('ensinar:')) {
-        const parts = msgLower.split('ensinar:')[1].split('=');
-        if (parts.length === 2) {
-          const pergunta = parts[0].trim();
-          const resposta = parts[1].trim();
-          knowledge[pergunta] = resposta;
-          saveMemory();
-          appendMessage('bot', 'Aprendi com sucesso!');
-        } else {
-          appendMessage('bot', 'Formato inválido. Use: ensinar: pergunta = resposta');
-        }
-      } else {
-        appendMessage('bot', 'Desculpa, ainda não sei responder isso.');
-      }
-    }
-
-    send.onclick = () => {
-      const message = input.value;
-      if (!message) return;
-      appendMessage('user', message);
-      processMessage(message);
-      input.value = '';
-    };
-
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") send.click();
-    });
-
-    // Entrada por voz
-    mic.onclick = () => {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = 'pt-PT';
-      recognition.start();
-      recognition.onresult = (event) => {
-        const result = event.results[0][0].transcript;
-        input.value = result;
-        send.click();
-      };
-      recognition.onerror = () => {
-        appendMessage('bot', 'Não consegui ouvir. Tente novamente.');
-      };
-    };
   </script>
 </body>
 </html>
