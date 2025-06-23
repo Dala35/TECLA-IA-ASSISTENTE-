@@ -3,96 +3,142 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TECLA – IA Adaptativa para Autismo</title>
+  <title>TECLA – IA Adaptativa</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f4f9ff;
-      text-align: center;
-      padding: 10px;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
     }
     h1 {
-      color: #004d7a;
+      color: #d32f2f;
     }
-    .categoria {
-      margin: 20px 0;
+    .container {
+      max-width: 600px;
+      margin: auto;
     }
-    .botoes {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 15px;
+    textarea, input {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
-    .botao {
-      font-size: 24px;
-      padding: 20px;
-      width: 120px;
-      height: 120px;
+    button {
+      background-color: #d32f2f;
+      color: white;
+      padding: 10px 16px;
       border: none;
-      border-radius: 16px;
-      background: #d0eaff;
+      border-radius: 8px;
+      margin-top: 10px;
       cursor: pointer;
-      box-shadow: 2px 2px 5px #aaa;
     }
-    .botao:hover {
-      background: #c2e0ff;
+    button:hover {
+      background-color: #b71c1c;
     }
-    #output {
-      margin-top: 30px;
-      font-size: 20px;
-      color: #333;
+    #ensinar-section, #conteudos-section {
+      display: none;
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .content-item {
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .content-item img {
+      max-width: 100%;
+      border-radius: 6px;
+    }
+    iframe {
+      width: 100%;
+      height: 200px;
+      border: none;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
-  <h1>👋🏽 Olá, eu sou a TECLA</h1>
-  <p>Sou uma IA feita para te ajudar. Escolha o que você quer comunicar:</p>
+  <div class="container">
+    <h1>🤖 TECLA – IA Adaptativa</h1>
+    <p>Sou a TECLA, uma IA criada para ajudar pessoas com autismo.</p>
 
-  <div class="categoria">
-    <h2>🧍 Necessidades</h2>
-    <div class="botoes">
-      <button class="botao" onclick="falar('Quero beber água')">🥤 Água</button>
-      <button class="botao" onclick="falar('Estou com fome')">🍽️ Comer</button>
-      <button class="botao" onclick="falar('Quero ir ao banheiro')">🚽 Banheiro</button>
-      <button class="botao" onclick="falar('Estou com sono')">😴 Dormir</button>
+    <button onclick="toggleEnsinar()">👩🏽‍🏫 Ensinar à TECLA</button>
+    <button onclick="mostrarConteudos()">📂 Ver Conteúdos Ensinados</button>
+
+    <div id="ensinar-section">
+      <h3>Ensinar nova informação à TECLA:</h3>
+      <input type="text" id="novaFrase" placeholder="Frase ou resposta que a IA deve aprender"/>
+      <input type="text" id="imagemURL" placeholder="Link de imagem (opcional)"/>
+      <input type="text" id="videoURL" placeholder="Link do vídeo YouTube (opcional)"/>
+      <button onclick="ensinar()">💾 Salvar</button>
+    </div>
+
+    <div id="conteudos-section">
+      <h3>📚 Conteúdos Ensinados</h3>
+      <div id="listaConteudos"></div>
     </div>
   </div>
-
-  <div class="categoria">
-    <h2>😊 Emoções</h2>
-    <div class="botoes">
-      <button class="botao" onclick="falar('Estou feliz')">🙂 Feliz</button>
-      <button class="botao" onclick="falar('Estou triste')">😢 Triste</button>
-      <button class="botao" onclick="falar('Estou com raiva')">😡 Bravo</button>
-      <button class="botao" onclick="falar('Estou com medo')">😱 Medo</button>
-    </div>
-  </div>
-
-  <div class="categoria">
-    <h2>🏡 Lugares</h2>
-    <div class="botoes">
-      <button class="botao" onclick="falar('Quero ir para casa')">🏠 Casa</button>
-      <button class="botao" onclick="falar('Quero ir para escola')">🏫 Escola</button>
-      <button class="botao" onclick="falar('Quero ir para a cama')">🛏️ Cama</button>
-      <button class="botao" onclick="falar('Quero andar de carro')">🚗 Carro</button>
-    </div>
-  </div>
-
-  <div id="output"></div>
 
   <script>
-    function falar(texto) {
-      const msg = new SpeechSynthesisUtterance(texto);
-      msg.lang = 'pt-PT';
-      speechSynthesis.speak(msg);
-      document.getElementById('output').textContent = texto;
-      salvarHistorico(texto);
+    function toggleEnsinar() {
+      const sec = document.getElementById("ensinar-section");
+      sec.style.display = sec.style.display === "none" ? "block" : "none";
     }
 
-    function salvarHistorico(frase) {
-      let historico = JSON.parse(localStorage.getItem('teclaHistorico')) || [];
-      historico.push({ frase: frase, data: new Date().toISOString() });
-      localStorage.setItem('teclaHistorico', JSON.stringify(historico));
+    function mostrarConteudos() {
+      const section = document.getElementById("conteudos-section");
+      section.style.display = section.style.display === "none" ? "block" : "none";
+      listarConteudos();
+    }
+
+    function ensinar() {
+      const frase = document.getElementById("novaFrase").value.trim();
+      const imagem = document.getElementById("imagemURL").value.trim();
+      const video = document.getElementById("videoURL").value.trim();
+
+      if (!frase) {
+        alert("Por favor, insira uma frase.");
+        return;
+      }
+
+      const novoConteudo = { frase, imagem, video };
+      const conteudos = JSON.parse(localStorage.getItem("tecla_conteudos") || "[]");
+      conteudos.push(novoConteudo);
+      localStorage.setItem("tecla_conteudos", JSON.stringify(conteudos));
+
+      alert("Frase ensinada com sucesso!");
+      document.getElementById("novaFrase").value = "";
+      document.getElementById("imagemURL").value = "";
+      document.getElementById("videoURL").value = "";
+    }
+
+    function listarConteudos() {
+      const listaDiv = document.getElementById("listaConteudos");
+      listaDiv.innerHTML = "";
+      const conteudos = JSON.parse(localStorage.getItem("tecla_conteudos") || "[]");
+
+      conteudos.forEach((item, i) => {
+        const el = document.createElement("div");
+        el.className = "content-item";
+        el.innerHTML = `<p><strong>Frase:</strong> ${item.frase}</p>`;
+
+        if (item.imagem) {
+          el.innerHTML += `<img src="${item.imagem}" alt="Imagem ensinada"/>`;
+        }
+
+        if (item.video) {
+          const videoID = item.video.split("v=")[1] || "";
+          const embedURL = `https://www.youtube.com/embed/${videoID}`;
+          el.innerHTML += `<iframe src="${embedURL}" allowfullscreen></iframe>`;
+        }
+
+        listaDiv.appendChild(el);
+      });
     }
   </script>
 </body>
