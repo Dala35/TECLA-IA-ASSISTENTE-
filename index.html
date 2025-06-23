@@ -1,69 +1,106 @@
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TECLA IA Adaptativa</title>
+  <title>TECLA – IA Adaptativa</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    #output { background: #fff; padding: 10px; margin-top: 10px; min-height: 100px; }
-    textarea, input[type="text"] { width: 100%; padding: 10px; margin: 5px 0; }
-    button { padding: 10px 15px; margin: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      padding: 20px;
+    }
+    .chatbox {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      max-width: 500px;
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .message {
+      margin-bottom: 10px;
+    }
+    .user {
+      color: #1d4ed8;
+    }
+    .bot {
+      color: #047857;
+    }
+    .input-area, .teach-area {
+      display: flex;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    input {
+      flex: 1;
+      padding: 8px;
+    }
+    button {
+      padding: 8px 12px;
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-  <h1>👩🏽‍🦱 TECLA – IA Adaptativa para Autistas</h1>
-  <p><strong>Fale comigo ou ensine algo novo:</strong></p>
-
-  <input type="text" id="userInput" placeholder="Escreve algo ou pergunta" />
-  <button onclick="handleUserInput()">Enviar</button>
-  <button onclick="resetKnowledge()">🧹 Apagar Memória</button>
-
-  <h3>🧠 Resposta:</h3>
-  <div id="output">Estou pronta para te ouvir!</div>
-
-  <h3>📚 Ensino:</h3>
-  <textarea id="teachArea" rows="4" placeholder="Exemplo: Se perguntarem 'quem és tu?', responda 'Sou a TECLA, uma IA criada para ajudar pessoas com autismo.'"></textarea>
-  <button onclick="teachAI()">Ensinar IA</button>
+  <div class="chatbox">
+    <h2>🤖 TECLA – IA Assistente</h2>
+    <div id="chat"></div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Escreve aqui..." />
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+    <hr />
+    <h3>📚 Ensinar a TECLA</h3>
+    <div class="teach-area">
+      <input type="text" id="newQuestion" placeholder="Pergunta" />
+      <input type="text" id="newAnswer" placeholder="Resposta da TECLA" />
+      <button onclick="teach()">Salvar</button>
+    </div>
+  </div>
 
   <script>
-    let knowledge = JSON.parse(localStorage.getItem('teclaKnowledge')) || {};
+    const chat = document.getElementById("chat");
+    const userInput = document.getElementById("userInput");
+    let memory = JSON.parse(localStorage.getItem("tecla_memory")) || {
+      "quem és tu?": "Eu sou a TECLA, uma IA criada para ajudar pessoas com autismo.",
+      "olá": "Olá! Como posso te ajudar hoje?",
+      "tudo bem?": "Sim, está tudo bem. E contigo?",
+    };
 
-    function saveKnowledge() {
-      localStorage.setItem('teclaKnowledge', JSON.stringify(knowledge));
+    function addMessage(from, text) {
+      const msg = document.createElement("div");
+      msg.className = "message " + (from === "user" ? "user" : "bot");
+      msg.textContent = (from === "user" ? "👤 " : "🤖 ") + text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    function handleUserInput() {
-      const input = document.getElementById('userInput').value.trim().toLowerCase();
-      const outputDiv = document.getElementById('output');
-      if (knowledge[input]) {
-        outputDiv.textContent = knowledge[input];
-      } else {
-        outputDiv.textContent = "Ainda não sei responder isso. Ensina-me por favor?";
-      }
+    function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
+      addMessage("user", text);
+      const response = memory[text.toLowerCase()] || "Ainda não sei como responder isso. Podes me ensinar?";
+      addMessage("bot", response);
+      userInput.value = "";
     }
 
-    function teachAI() {
-      const teachingText = document.getElementById('teachArea').value.trim();
-      const match = teachingText.match(/perguntarem ['"](.*?)['"].*?responda ['"](.*?)['"]/i);
-      if (match && match.length === 3) {
-        const question = match[1].toLowerCase();
-        const answer = match[2];
-        knowledge[question] = answer;
-        saveKnowledge();
-        alert("✅ Ensinei com sucesso!");
-        document.getElementById('teachArea').value = "";
-      } else {
-        alert("⚠️ Formato inválido. Usa: Se perguntarem 'pergunta', responda 'resposta'.");
-      }
-    }
-
-    function resetKnowledge() {
-      if (confirm("Tens certeza que desejas apagar toda a memória da IA?")) {
-        knowledge = {};
-        saveKnowledge();
-        document.getElementById('output').textContent = "Memória apagada. Recomeçando do zero.";
+    function teach() {
+      const question = document.getElementById("newQuestion").value.trim().toLowerCase();
+      const answer = document.getElementById("newAnswer").value.trim();
+      if (question && answer) {
+        memory[question] = answer;
+        localStorage.setItem("tecla_memory", JSON.stringify(memory));
+        alert("Ensinado com sucesso!");
+        document.getElementById("newQuestion").value = "";
+        document.getElementById("newAnswer").value = "";
       }
     }
   </script>
