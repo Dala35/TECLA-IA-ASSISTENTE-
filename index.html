@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TECLA IA Adaptativa</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    #output { background: #fff; padding: 10px; margin-top: 10px; min-height: 100px; }
+    textarea, input[type="text"] { width: 100%; padding: 10px; margin: 5px 0; }
+    button { padding: 10px 15px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>👩🏽‍🦱 TECLA – IA Adaptativa para Autistas</h1>
+  <p><strong>Fale comigo ou ensine algo novo:</strong></p>
+
+  <input type="text" id="userInput" placeholder="Escreve algo ou pergunta" />
+  <button onclick="handleUserInput()">Enviar</button>
+  <button onclick="resetKnowledge()">🧹 Apagar Memória</button>
+
+  <h3>🧠 Resposta:</h3>
+  <div id="output">Estou pronta para te ouvir!</div>
+
+  <h3>📚 Ensino:</h3>
+  <textarea id="teachArea" rows="4" placeholder="Exemplo: Se perguntarem 'quem és tu?', responda 'Sou a TECLA, uma IA criada para ajudar pessoas com autismo.'"></textarea>
+  <button onclick="teachAI()">Ensinar IA</button>
+
+  <script>
+    let knowledge = JSON.parse(localStorage.getItem('teclaKnowledge')) || {};
+
+    function saveKnowledge() {
+      localStorage.setItem('teclaKnowledge', JSON.stringify(knowledge));
+    }
+
+    function handleUserInput() {
+      const input = document.getElementById('userInput').value.trim().toLowerCase();
+      const outputDiv = document.getElementById('output');
+      if (knowledge[input]) {
+        outputDiv.textContent = knowledge[input];
+      } else {
+        outputDiv.textContent = "Ainda não sei responder isso. Ensina-me por favor?";
+      }
+    }
+
+    function teachAI() {
+      const teachingText = document.getElementById('teachArea').value.trim();
+      const match = teachingText.match(/perguntarem ['"](.*?)['"].*?responda ['"](.*?)['"]/i);
+      if (match && match.length === 3) {
+        const question = match[1].toLowerCase();
+        const answer = match[2];
+        knowledge[question] = answer;
+        saveKnowledge();
+        alert("✅ Ensinei com sucesso!");
+        document.getElementById('teachArea').value = "";
+      } else {
+        alert("⚠️ Formato inválido. Usa: Se perguntarem 'pergunta', responda 'resposta'.");
+      }
+    }
+
+    function resetKnowledge() {
+      if (confirm("Tens certeza que desejas apagar toda a memória da IA?")) {
+        knowledge = {};
+        saveKnowledge();
+        document.getElementById('output').textContent = "Memória apagada. Recomeçando do zero.";
+      }
+    }
+  </script>
+</body>
+</html>
