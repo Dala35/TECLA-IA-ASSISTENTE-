@@ -3,106 +3,134 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TECLA – IA Adaptativa</title>
+  <title>TECLA IA ASSISTENTE</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f1f1f1;
+      background: #1a1a1a;
+      color: #fff;
       padding: 20px;
+      max-width: 600px;
+      margin: auto;
     }
-    .chatbox {
-      background: #fff;
-      border-radius: 10px;
+    h1 {
+      text-align: center;
+      color: #00ffcc;
+    }
+    #chat {
+      background: #333;
       padding: 15px;
-      max-width: 500px;
-      margin: 0 auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .message {
+      border-radius: 10px;
+      min-height: 300px;
+      overflow-y: auto;
       margin-bottom: 10px;
     }
+    .user, .bot {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+    }
     .user {
-      color: #1d4ed8;
+      background: #007bff;
+      text-align: right;
     }
     .bot {
-      color: #047857;
+      background: #444;
     }
-    .input-area, .teach-area {
-      display: flex;
-      gap: 5px;
-      margin-top: 10px;
+    input, button {
+      padding: 10px;
+      font-size: 16px;
     }
-    input {
-      flex: 1;
-      padding: 8px;
+    #input {
+      width: 70%;
     }
-    button {
-      padding: 8px 12px;
-      background: #1d4ed8;
-      color: white;
-      border: none;
-      border-radius: 5px;
+    #send, #mic {
+      width: 25%;
+      margin-left: 5px;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    #mic {
+      background: #ff4081;
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <div class="chatbox">
-    <h2>🤖 TECLA – IA Assistente</h2>
-    <div id="chat"></div>
-    <div class="input-area">
-      <input type="text" id="userInput" placeholder="Escreve aqui..." />
-      <button onclick="sendMessage()">Enviar</button>
-    </div>
-    <hr />
-    <h3>📚 Ensinar a TECLA</h3>
-    <div class="teach-area">
-      <input type="text" id="newQuestion" placeholder="Pergunta" />
-      <input type="text" id="newAnswer" placeholder="Resposta da TECLA" />
-      <button onclick="teach()">Salvar</button>
-    </div>
-  </div>
+  <h1>🤖 TECLA – IA Inclusiva</h1>
+  <div id="chat"></div>
+  <input type="text" id="input" placeholder="Digite ou fale..." />
+  <button id="send">Enviar</button>
+  <button id="mic">🎤</button>
 
   <script>
-    const chat = document.getElementById("chat");
-    const userInput = document.getElementById("userInput");
-    let memory = JSON.parse(localStorage.getItem("tecla_memory")) || {
-      "quem és tu?": "Eu sou a TECLA, uma IA criada para ajudar pessoas com autismo.",
-      "olá": "Olá! Como posso te ajudar hoje?",
-      "tudo bem?": "Sim, está tudo bem. E contigo?",
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
+    const mic = document.getElementById('mic');
+
+    let knowledge = JSON.parse(localStorage.getItem('tecla_memory')) || {
+      "quem é você": "Eu sou a TECLA, uma IA criada para ajudar pessoas com autismo.",
+      "olá": "Olá! Como posso te ajudar?",
     };
 
-    function addMessage(from, text) {
-      const msg = document.createElement("div");
-      msg.className = "message " + (from === "user" ? "user" : "bot");
-      msg.textContent = (from === "user" ? "👤 " : "🤖 ") + text;
+    function saveMemory() {
+      localStorage.setItem('tecla_memory', JSON.stringify(knowledge));
+    }
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement('div');
+      msg.className = sender;
+      msg.textContent = text;
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function sendMessage() {
-      const text = userInput.value.trim();
-      if (!text) return;
-      addMessage("user", text);
-      const response = memory[text.toLowerCase()] || "Ainda não sei como responder isso. Podes me ensinar?";
-      addMessage("bot", response);
-      userInput.value = "";
-    }
+    function processMessage(message) {
+      const msgLower = message.toLowerCase().trim();
 
-    function teach() {
-      const question = document.getElementById("newQuestion").value.trim().toLowerCase();
-      const answer = document.getElementById("newAnswer").value.trim();
-      if (question && answer) {
-        memory[question] = answer;
-        localStorage.setItem("tecla_memory", JSON.stringify(memory));
-        alert("Ensinado com sucesso!");
-        document.getElementById("newQuestion").value = "";
-        document.getElementById("newAnswer").value = "";
+      if (knowledge[msgLower]) {
+        appendMessage('bot', knowledge[msgLower]);
+      } else if (msgLower.includes('ensinar:')) {
+        const parts = msgLower.split('ensinar:')[1].split('=');
+        if (parts.length === 2) {
+          const pergunta = parts[0].trim();
+          const resposta = parts[1].trim();
+          knowledge[pergunta] = resposta;
+          saveMemory();
+          appendMessage('bot', 'Aprendi com sucesso!');
+        } else {
+          appendMessage('bot', 'Formato inválido. Use: ensinar: pergunta = resposta');
+        }
+      } else {
+        appendMessage('bot', 'Desculpa, ainda não sei responder isso.');
       }
     }
+
+    send.onclick = () => {
+      const message = input.value;
+      if (!message) return;
+      appendMessage('user', message);
+      processMessage(message);
+      input.value = '';
+    };
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") send.click();
+    });
+
+    // Entrada por voz
+    mic.onclick = () => {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'pt-PT';
+      recognition.start();
+      recognition.onresult = (event) => {
+        const result = event.results[0][0].transcript;
+        input.value = result;
+        send.click();
+      };
+      recognition.onerror = () => {
+        appendMessage('bot', 'Não consegui ouvir. Tente novamente.');
+      };
+    };
   </script>
 </body>
 </html>
