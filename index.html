@@ -157,21 +157,33 @@ const respostasEmoji = {
     }
     // Microfone
     function ouvir() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "pt-PT";
-      recognition.start();
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "pt-PT";
+  recognition.start();
 
-      recognition.onresult = function(event) {
-        const falado = event.results[0][0].transcript;
-        document.getElementById("entrada").value = falado;
-        responder();
-      };
+  recognition.onresult = function(event) {
+    const falado = event.results[0][0].transcript.toLowerCase();
 
-      recognition.onerror = function(event) {
-        alert("Erro ao usar o microfone.");
-      };
+    // Tradução de comandos por voz com emoji
+    const comandos = {
+      "emoji feliz": "😀",
+      "emoji triste": "😢",
+      "emoji pão": "🍞",
+      "emoji sumo": "🧃",
+      "emoji banheiro": "🚽",
+      "emoji ajuda": "🚨",
+      "emoji gosto": "❤️"
+    };
+
+    const chaveTraduzida = comandos[falado] || falado;
+    document.getElementById("entrada").value = chaveTraduzida;
+    responder();
+  };
+
+  recognition.onerror = function(event) {
+    alert("Erro ao usar o microfone.");
+  };
     }
-
     // Mostrar cartões visuais
     function mostrarCartoes() {
       const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
