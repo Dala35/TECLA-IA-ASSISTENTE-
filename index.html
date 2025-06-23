@@ -138,24 +138,23 @@ const respostasEmoji = {
   "❤️": { frase: "Gosto disto.", imagem: "https://i.imgur.com/lN8vXIr.png" }
 };
     function responderPorChave(chave) {
-      const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
-      const resultado = conteudos[chave];
+  const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
+  const resultado = conteudos[chave] || respostasEmoji[chave];
 
-      const div = document.getElementById("resposta");
-      div.innerHTML = "";
+  const div = document.getElementById("resposta");
+  div.innerHTML = "";
 
-      if (resultado) {
-        div.innerHTML = `<p><strong>TECLA diz:</strong> ${resultado.frase}</p>`;
-        if (resultado.imagem) {
-          div.innerHTML += `<img src="${resultado.imagem}" alt="Imagem relacionada"/>`;
-        }
-        falar(resultado.frase);
-      } else {
-        div.innerHTML = `<p><em>Não aprendi isso ainda.</em></p>`;
-        falar("Desculpa, ainda não aprendi isso.");
-      }
+  if (resultado) {
+    div.innerHTML = `<p><strong>TECLA diz:</strong> ${resultado.frase}</p>`;
+    if (resultado.imagem) {
+      div.innerHTML += `<img src="${resultado.imagem}" alt="Imagem relacionada"/>`;
     }
-
+    falar(resultado.frase);
+  } else {
+    div.innerHTML = `<p><em>Não aprendi isso ainda.</em></p>`;
+    falar("Desculpa, ainda não aprendi isso.");
+  }
+    }
     // Microfone
     function ouvir() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
