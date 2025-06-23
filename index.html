@@ -35,6 +35,27 @@
     .formulario {
       margin-top: 30px;
     }
+    .cartoes {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 30px;
+      gap: 10px;
+    }
+    .cartao {
+      flex: 1 1 45%;
+      background: #ffffff;
+      border: 2px solid #e57373;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .cartao img {
+      max-width: 100%;
+      height: 100px;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
@@ -43,6 +64,7 @@
 
   <input type="text" id="entrada" placeholder="Digite uma palavra ou frase..." />
   <button onclick="responder()">🔊 Responder</button>
+  <button onclick="ouvir()">🎤 Falar em vez de digitar</button>
 
   <div id="resposta"></div>
 
@@ -53,6 +75,8 @@
     <input type="text" id="imagemURL" placeholder="Link de imagem (opcional)" />
     <button onclick="ensinar()">💾 Ensinar</button>
   </div>
+
+  <div class="cartoes" id="cartoesArea"></div>
 
   <script>
     // Fala em voz alta
@@ -83,13 +107,18 @@
       document.getElementById("novaFrase").value = "";
       document.getElementById("respostaTexto").value = "";
       document.getElementById("imagemURL").value = "";
+      mostrarCartoes(); // Atualiza os cartões
     }
 
     // Responder com voz e imagem
     function responder() {
       const entrada = document.getElementById("entrada").value.trim().toLowerCase();
+      responderPorChave(entrada);
+    }
+
+    function responderPorChave(chave) {
       const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
-      const resultado = conteudos[entrada];
+      const resultado = conteudos[chave];
 
       const div = document.getElementById("resposta");
       div.innerHTML = "";
@@ -105,6 +134,45 @@
         falar("Desculpa, ainda não aprendi isso.");
       }
     }
+
+    // Microfone
+    function ouvir() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "pt-PT";
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const falado = event.results[0][0].transcript;
+        document.getElementById("entrada").value = falado;
+        responder();
+      };
+
+      recognition.onerror = function(event) {
+        alert("Erro ao usar o microfone.");
+      };
+    }
+
+    // Mostrar cartões visuais
+    function mostrarCartoes() {
+      const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
+      const cartoesArea = document.getElementById("cartoesArea");
+      cartoesArea.innerHTML = "";
+
+      for (let chave in conteudos) {
+        const info = conteudos[chave];
+        const cartao = document.createElement("div");
+        cartao.className = "cartao";
+        cartao.innerHTML = `
+          <div><strong>${chave}</strong></div>
+          ${info.imagem ? `<img src="${info.imagem}" />` : ""}
+        `;
+        cartao.onclick = () => responderPorChave(chave);
+        cartoesArea.appendChild(cartao);
+      }
+    }
+
+    // Inicializa cartões ao abrir a página
+    window.onload = mostrarCartoes;
   </script>
 </body>
 </html>
