@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TECLA–Assistente Inclusiva</title>
+  <title>TECLA – Assistente Inclusiva</title>
   <style>
     body {
       font-family: sans-serif;
@@ -74,14 +74,14 @@
     <input type="text" id="respostaTexto" placeholder="Frase que TECLA deve falar" />
     <input type="text" id="imagemURL" placeholder="Link de imagem (opcional)" />
     <button onclick="ensinar()">💾 Ensinar</button>
-    <input type="file" id="arquivoImportar" accept=".json" />
-    <button onclick="importar()">📥 Importar Aprendizados</button>
+    <input type="file" id="importarArquivo" accept=".json" />
+    <button onclick="importarDados()">📥 Importar Aprendizados</button>
   </div>
-
-  <div class="cartoes" id="cartoesArea"></div>
 
   <h2>📦 Emojis Rápidos 📢 Frases rápidas:</h2>
   <div class="cartoes" id="emojiCartoes"></div>
+
+  <div class="cartoes" id="cartoesArea"></div>
 
   <script>
     const respostasEmoji = {
@@ -150,20 +150,20 @@
       } else {
         div.innerHTML = `<p><em>Não aprendi isso ainda.</em></p>`;
         falar("Desculpa, ainda não aprendi isso.");
+        registrarDesconhecido(chave);
       }
     }
-let desconhecidos = JSON.parse(localStorage.getItem("tecla_desconhecidos") || "{}");
 
-function registrarDesconhecido(chave) {
-  desconhecidos[chave] = (desconhecidos[chave] || 0) + 1;
-  if (desconhecidos[chave] >= 3) {
-    alert(`A frase "${chave}" foi dita várias vezes. Que tal ensiná-la à TECLA?`);
-  }
-  localStorage.setItem("tecla_desconhecidos", JSON.stringify(desconhecidos));
-}
-    if (!resultado) {
-  registrarDesconhecido(chave);
+    let desconhecidos = JSON.parse(localStorage.getItem("tecla_desconhecidos") || "{}");
+
+    function registrarDesconhecido(chave) {
+      desconhecidos[chave] = (desconhecidos[chave] || 0) + 1;
+      if (desconhecidos[chave] >= 3) {
+        alert(`A frase "${chave}" foi dita várias vezes. Que tal ensiná-la à TECLA?`);
+      }
+      localStorage.setItem("tecla_desconhecidos", JSON.stringify(desconhecidos));
     }
+
     function ouvir() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = "pt-PT";
@@ -186,6 +186,29 @@ function registrarDesconhecido(chave) {
       };
     }
 
+    function importarDados() {
+      const arquivo = document.getElementById("importarArquivo").files[0];
+      if (!arquivo) {
+        alert("Selecione um arquivo .json válido.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dadosImportados = JSON.parse(e.target.result);
+          const existentes = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
+          const novoBanco = { ...existentes, ...dadosImportados };
+          localStorage.setItem("tecla_respostas", JSON.stringify(novoBanco));
+          alert("Dados importados com sucesso!");
+          mostrarCartoes();
+        } catch {
+          alert("Erro ao importar. Verifique o arquivo.");
+        }
+      };
+      reader.readAsText(arquivo);
+    }
+
     function mostrarCartoes() {
       const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
       const cartoesArea = document.getElementById("cartoesArea");
@@ -200,7 +223,6 @@ function registrarDesconhecido(chave) {
         cartoesArea.appendChild(cartao);
       }
 
-      // Cartões de emojis fixos
       const emojiCartoes = document.getElementById("emojiCartoes");
       emojiCartoes.innerHTML = "";
       for (let emoji in respostasEmoji) {
@@ -211,32 +233,8 @@ function registrarDesconhecido(chave) {
         emojiCartoes.appendChild(cartao);
       }
     }
-<input type="file" id="importarArquivo" accept=".json" />
-<button onclick="importarDados()">📥 Importar Dados</button>
-    function importarDados() {
-  const arquivo = document.getElementById("importarArquivo").files[0];
-  if (!arquivo) {
-    alert("Selecione um arquivo .json válido.");
-    return;
-  }
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const dadosImportados = JSON.parse(e.target.result);
-      const existentes = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
-      const novoBanco = { ...existentes, ...dadosImportados };
-      localStorage.setItem("tecla_respostas", JSON.stringify(novoBanco));
-      alert("Dados importados com sucesso!");
-      mostrarCartoes();
-    } catch {
-      alert("Erro ao importar. Verifique o arquivo.");
-    }
-  };
-  reader.readAsText(arquivo);
-    }
     window.onload = mostrarCartoes;
-    
   </script>
 </body>
 </html>
