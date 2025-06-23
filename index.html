@@ -60,9 +60,8 @@
 </head>
 <body>
   <h1>🧠 TECLA – Assistente Inclusiva</h1>
-  <p>Sou a TECLA, criada para apoiar a comunicação de pessoas com autismo.</p
-</div>
-</div>
+  <p>Olá, eu sou a TECLA. Fui criada por <strong>Dala De Carvalho</strong> para apoiar a comunicação de pessoas com autismo. Estou aqui para aprender contigo, sempre!</p>
+
   <input type="text" id="entrada" placeholder="Digite uma palavra ou frase..." />
   <button onclick="responder()">🔊 Responder</button>
   <button onclick="ouvir()">🎤 Falar em vez de digitar</button>
@@ -75,12 +74,32 @@
     <input type="text" id="respostaTexto" placeholder="Frase que TECLA deve falar" />
     <input type="text" id="imagemURL" placeholder="Link de imagem (opcional)" />
     <button onclick="ensinar()">💾 Ensinar</button>
+    <input type="file" id="arquivoImportar" accept=".json" />
+    <button onclick="importar()">📥 Importar Aprendizados</button>
   </div>
 
   <div class="cartoes" id="cartoesArea"></div>
 
+  <h2>📦 Emojis Rápidos 📢 Frases rápidas:</h2>
+  <div class="cartoes" id="emojiCartoes"></div>
+
   <script>
-    // Fala em voz alta
+    const respostasEmoji = {
+      "😀": { frase: "Estou feliz!", imagem: "https://i.imgur.com/EyQF7cv.png" },
+      "😢": { frase: "Estou triste.", imagem: "https://i.imgur.com/lJp7v7w.png" },
+      "🍞": { frase: "Quero comer pão.", imagem: "https://i.imgur.com/fZ2WD5T.png" },
+      "🧃": { frase: "Quero beber sumo.", imagem: "https://i.imgur.com/4W1srmx.png" },
+      "🚽": { frase: "Preciso ir ao banheiro.", imagem: "https://i.imgur.com/TZzYFJ1.png" },
+      "🚨": { frase: "Preciso de ajuda!", imagem: "https://i.imgur.com/L7HRq4X.png" },
+      "❤️": { frase: "Gosto disto.", imagem: "https://i.imgur.com/lN8vXIr.png" },
+      "quero ir ao banheiro": { frase: "Quero ir ao banheiro", imagem: "https://i.imgur.com/TZzYFJ1.png" },
+      "estou com fome": { frase: "Estou com fome", imagem: "https://i.imgur.com/fZ2WD5T.png" },
+      "estou com sede": { frase: "Estou com sede", imagem: "https://i.imgur.com/4W1srmx.png" },
+      "estou cansado": { frase: "Estou cansado", imagem: "https://i.imgur.com/t4X8gLW.png" },
+      "quero ajuda": { frase: "Quero ajuda", imagem: "https://i.imgur.com/L7HRq4X.png" },
+      "quero brincar": { frase: "Quero brincar", imagem: "https://i.imgur.com/6zJQ6rx.png" }
+    };
+
     function falar(texto) {
       const synth = window.speechSynthesis;
       const utter = new SpeechSynthesisUtterance(texto);
@@ -89,7 +108,6 @@
       synth.speak(utter);
     }
 
-    // Ensinar nova frase
     function ensinar() {
       const chave = document.getElementById("novaFrase").value.trim().toLowerCase();
       const frase = document.getElementById("respostaTexto").value.trim();
@@ -108,72 +126,55 @@
       document.getElementById("novaFrase").value = "";
       document.getElementById("respostaTexto").value = "";
       document.getElementById("imagemURL").value = "";
-      mostrarCartoes(); // Atualiza os cartões
+      mostrarCartoes();
     }
 
-    // Responder com voz e imagem
     function responder() {
       const entrada = document.getElementById("entrada").value.trim().toLowerCase();
       responderPorChave(entrada);
     }
-// Respostas automáticas com emojis
-const respostasEmoji = {
-  "😀": { frase: "Estou feliz!", imagem: "https://i.imgur.com/EyQF7cv.png" },
-  "😢": { frase: "Estou triste.", imagem: "https://i.imgur.com/lJp7v7w.png" },
-  "🍞": { frase: "Quero comer pão.", imagem: "https://i.imgur.com/fZ2WD5T.png" },
-  "🧃": { frase: "Quero beber sumo.", imagem: "https://i.imgur.com/4W1srmx.png" },
-  "🚽": { frase: "Preciso ir ao banheiro.", imagem: "https://i.imgur.com/TZzYFJ1.png" },
-  "🚨": { frase: "Preciso de ajuda!", imagem: "https://i.imgur.com/L7HRq4X.png" },
-  "❤️": { frase: "Gosto disto.", imagem: "https://i.imgur.com/lN8vXIr.png" }
-};
+
     function responderPorChave(chave) {
-  const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
-  const resultado = conteudos[chave] || respostasEmoji[chave];
+      const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
+      const resultado = conteudos[chave] || respostasEmoji[chave];
 
-  const div = document.getElementById("resposta");
-  div.innerHTML = "";
+      const div = document.getElementById("resposta");
+      div.innerHTML = "";
 
-  if (resultado) {
-    div.innerHTML = `<p><strong>TECLA diz:</strong> ${resultado.frase}</p>`;
-    if (resultado.imagem) {
-      div.innerHTML += `<img src="${resultado.imagem}" alt="Imagem relacionada"/>`;
+      if (resultado) {
+        div.innerHTML = `<p><strong>TECLA diz:</strong> ${resultado.frase}</p>`;
+        if (resultado.imagem) {
+          div.innerHTML += `<img src="${resultado.imagem}" alt="Imagem relacionada"/>`;
+        }
+        falar(resultado.frase);
+      } else {
+        div.innerHTML = `<p><em>Não aprendi isso ainda.</em></p>`;
+        falar("Desculpa, ainda não aprendi isso.");
+      }
     }
-    falar(resultado.frase);
-  } else {
-    div.innerHTML = `<p><em>Não aprendi isso ainda.</em></p>`;
-    falar("Desculpa, ainda não aprendi isso.");
-  }
-    }
-    // Microfone
+
     function ouvir() {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = "pt-PT";
-  recognition.start();
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "pt-PT";
+      recognition.start();
 
-  recognition.onresult = function(event) {
-    const falado = event.results[0][0].transcript.toLowerCase();
+      recognition.onresult = function(event) {
+        const falado = event.results[0][0].transcript.toLowerCase();
+        const comandos = {
+          "emoji feliz": "😀", "emoji triste": "😢", "emoji pão": "🍞",
+          "emoji sumo": "🧃", "emoji banheiro": "🚽", "emoji ajuda": "🚨",
+          "emoji gosto": "❤️"
+        };
+        const chaveTraduzida = comandos[falado] || falado;
+        document.getElementById("entrada").value = chaveTraduzida;
+        responder();
+      };
 
-    // Tradução de comandos por voz com emoji
-    const comandos = {
-      "emoji feliz": "😀",
-      "emoji triste": "😢",
-      "emoji pão": "🍞",
-      "emoji sumo": "🧃",
-      "emoji banheiro": "🚽",
-      "emoji ajuda": "🚨",
-      "emoji gosto": "❤️"
-    };
-
-    const chaveTraduzida = comandos[falado] || falado;
-    document.getElementById("entrada").value = chaveTraduzida;
-    responder();
-  };
-
-  recognition.onerror = function(event) {
-    alert("Erro ao usar o microfone.");
-  };
+      recognition.onerror = function() {
+        alert("Erro ao usar o microfone.");
+      };
     }
-    // Mostrar cartões visuais
+
     function mostrarCartoes() {
       const conteudos = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
       const cartoesArea = document.getElementById("cartoesArea");
@@ -183,35 +184,45 @@ const respostasEmoji = {
         const info = conteudos[chave];
         const cartao = document.createElement("div");
         cartao.className = "cartao";
-        cartao.innerHTML = `
-          <div><strong>${chave}</strong></div>
-          ${info.imagem ? `<img src="${info.imagem}" />` : ""}
-        `;
+        cartao.innerHTML = `<div><strong>${chave}</strong></div>${info.imagem ? `<img src="${info.imagem}" />` : ""}`;
         cartao.onclick = () => responderPorChave(chave);
         cartoesArea.appendChild(cartao);
       }
+
+      // Cartões de emojis fixos
+      const emojiCartoes = document.getElementById("emojiCartoes");
+      emojiCartoes.innerHTML = "";
+      for (let emoji in respostasEmoji) {
+        const cartao = document.createElement("div");
+        cartao.className = "cartao";
+        cartao.innerText = `${emoji} ${respostasEmoji[emoji].frase}`;
+        cartao.onclick = () => responderPorChave(emoji);
+        emojiCartoes.appendChild(cartao);
+      }
     }
 
-    // Inicializa cartões ao abrir a página
+    function importar() {
+      const input = document.getElementById("arquivoImportar");
+      const file = input.files[0];
+      if (!file) return alert("Nenhum ficheiro selecionado.");
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dados = JSON.parse(e.target.result);
+          const anteriores = JSON.parse(localStorage.getItem("tecla_respostas") || "{}");
+          const novos = { ...anteriores, ...dados };
+          localStorage.setItem("tecla_respostas", JSON.stringify(novos));
+          alert("Dados importados com sucesso!");
+          mostrarCartoes();
+        } catch {
+          alert("Ficheiro inválido.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
     window.onload = mostrarCartoes;
   </script>
-  <h2>📦 Emojis Rápidos 📢 Frases rápidas:</h2>
-<div class="cartoes">
-  <div class="cartao" onclick="responderPorChave('😀')">😀 Feliz</div>
-  <div class="cartao" onclick="responderPorChave('😢')">😢 Triste</div>
-  <div class="cartao" onclick="responderPorChave('🍞')">🍞 Comer</div>
-  <div class="cartao" onclick="responderPorChave('🧃')">🧃 Beber</div>
-  <div class="cartao" onclick="responderPorChave('🚽')">🚽 Banheiro</div>
-  <div class="cartao" onclick="responderPorChave('🚨')">🚨 Ajuda</div>
-  <div class="cartao" onclick="responderPorChave('❤️')">❤️ Gosto</div>
-   <div class="cartão" onclick="responderPorChave('quero ir ao banheiro')">🚻 Quero ir ao banheiro</button>
-  <div class="cartão" onclick="responderPorChave('estou com fome')">🍽 Estou com fome</button>
-    <div class="cartão" onclick="responderPorChave('estou com sede')">🥤 Estou com sede</button>
-    <div class="cartão" onclick="responderPorChave('estou cansado')">😴 Estou cansado</button>
-    <div class="cartão" onclick="responderPorChave('quero ajuda')">🙋🏽 Quero ajuda</button>
-    <div class="cartão" onclick="responderPorChave('quero brincar')">🎮 Quero brincar</button>
-  </div>
-      
-</div>
 </body>
 </html>
